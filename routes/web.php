@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProdiController;
+use App\Http\Controllers\PendaftarController;
+use App\Http\Controllers\DosenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +19,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/prodi', [ProdiController::class, 'index']);
+Route::post('/prodi', [ProdiController::class, 'store']);
+Route::delete('/prodi/{id}', [ProdiController::class, 'destroy']);
+
+Route::get('/pendaftar', [PendaftarController::class, 'index']);
+Route::post('/pendaftar', [PendaftarController::class, 'store']);
+
+Route::get('/dosen', [DosenController::class, 'index']);
+Route::post('/dosen', [DosenController::class, 'store']);

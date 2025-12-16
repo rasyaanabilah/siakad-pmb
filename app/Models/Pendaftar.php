@@ -22,4 +22,9 @@ class Pendaftar extends Model
     {
         return $this->belongsTo(Prodi::class);
     }
+    public function dosen()
+    {
+        return $this->belongsTo(Dosen::class);
+    }
+
 }
