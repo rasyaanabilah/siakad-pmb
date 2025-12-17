@@ -7,5 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Dosen extends Model
 {
-    use HasFactory;
+    protected $fillable = ['nama_dosen'];
+
+    public function pendaftars()
+    {
+        return $this->hasMany(Pendaftar::class);
+    }
 }
+
+

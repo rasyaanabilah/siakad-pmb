@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Prodi;
+use App\Models\Dosen;
 
 class Pendaftar extends Model
 {
@@ -14,17 +16,20 @@ class Pendaftar extends Model
         'email',
         'sekolah_asal',
         'prodi_id',
-        'dokumen',
-        'status'
+        'dosen_id',
+        'foto',
+        'dokumen'
     ];
 
     public function prodi()
     {
         return $this->belongsTo(Prodi::class);
     }
+
     public function dosen()
     {
         return $this->belongsTo(Dosen::class);
     }
 
 }
+

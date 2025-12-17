@@ -16,11 +16,14 @@ return new class extends Migration
         $table->string('nama');
         $table->string('email')->unique();
         $table->string('sekolah_asal');
-        $table->foreignId('prodi_id')->constrained()->cascadeOnDelete();
-        $table->string('dokumen')->nullable();
-        $table->enum('status', ['pending', 'diterima', 'ditolak'])->default('pending');
+
+        $table->foreignId('prodi_id')
+            ->constrained()
+            ->cascadeOnDelete();
+
         $table->timestamps();
     });
+
 
     }
 
