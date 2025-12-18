@@ -1,9 +1,7 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProdiController;
-use App\Http\Controllers\PendaftarController;
-use App\Http\Controllers\DosenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,15 +14,30 @@ use App\Http\Controllers\DosenController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-Route::get('/prodi', [ProdiController::class, 'index']);
-Route::post('/prodi', [ProdiController::class, 'store']);
-Route::delete('/prodi/{id}', [ProdiController::class, 'destroy']);
+    Route::get('/', function () {
+        return view('welcome');
+    });
 
-Route::get('/pendaftar', [PendaftarController::class, 'index']);
-Route::post('/pendaftar', [PendaftarController::class, 'store']);
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/dosen', [DosenController::class, 'index']);
-Route::post('/dosen', [DosenController::class, 'store']);
+    Route::middleware('auth')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
+
+    Route::middleware(['auth', 'role:admin'])->group(function () {
+        Route::get('/admin/dashboard', function () {
+            return view('admin.dashboard');
+        });
+    });
+
+    Route::middleware(['auth', 'role:pendaftar'])->group(function () {
+        Route::get('/pendaftar/dashboard', function () {
+            return view('pendaftar.dashboard');
+        });
+    });
+
+require __DIR__.'/auth.php';
