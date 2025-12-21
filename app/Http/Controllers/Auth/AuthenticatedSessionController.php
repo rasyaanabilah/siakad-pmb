@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,18 +23,28 @@ class AuthenticatedSessionController extends Controller
      * Handle an incoming authentication request.
      */
     public function store(LoginRequest $request): RedirectResponse
-    {
-        $request->authenticate();
+{
+    $request->authenticate();
+    $request->session()->regenerate();
 
-        $request->session()->regenerate();
-        if (auth()->user()->role === 'admin') {
-        return redirect('/admin/dashboard');
-        }
+    $user = auth()->user();
 
-        return redirect('/pendaftar/dashboard');
-
-        return redirect()->intended(RouteServiceProvider::HOME);
+    if ($user->role === 'admin') {
+        return redirect()->to('/admin/dashboard');
     }
+
+    if ($user->role === 'pendaftar') {
+        return redirect()->to('/pendaftar/dashboard');
+    }
+
+    // fallback (kalau role kosong)
+    Auth::logout();
+    return redirect('/login')->withErrors([
+        'email' => 'Role user tidak valid',
+    ]);
+}
+
+
 
     /**
      * Destroy an authenticated session.
@@ -45,7 +54,6 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

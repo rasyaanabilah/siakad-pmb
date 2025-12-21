@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Prodi;
 use App\Models\Dosen;
+use App\Models\User;
 
 class Pendaftar extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'nama',
         'email',
         'sekolah_asal',
@@ -31,5 +33,8 @@ class Pendaftar extends Model
         return $this->belongsTo(Dosen::class);
     }
 
-}
-
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+    }
