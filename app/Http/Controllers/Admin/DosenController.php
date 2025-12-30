@@ -10,21 +10,39 @@ class DosenController extends Controller
 {
     public function index()
     {
-        $dosens = Dosen::all();
+        $dosens = Dosen::orderBy('nama_dosen')->get();
         return view('admin.dosen.index', compact('dosens'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:100',
+            'nama_dosen' => 'required|string|max:100',
         ]);
 
         Dosen::create([
-            'nama_dosen' => $request->nama,
+            'nama_dosen' => $request->nama_dosen,
         ]);
 
-        return redirect()->route('admin.dosen.index')
-            ->with('success', 'Dosen berhasil ditambahkan');
+        return back()->with('success', 'Dosen berhasil ditambahkan');
+    }
+
+    public function update(Request $request, Dosen $dosen)
+    {
+        $request->validate([
+            'nama_dosen' => 'required|string|max:100',
+        ]);
+
+        $dosen->update([
+            'nama_dosen' => $request->nama_dosen,
+        ]);
+
+        return back()->with('success', 'Data dosen berhasil diperbarui');
+    }
+
+    public function destroy(Dosen $dosen)
+    {
+        $dosen->delete();
+        return back()->with('success', 'Data dosen berhasil dihapus');
     }
 }

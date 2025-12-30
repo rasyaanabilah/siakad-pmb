@@ -9,41 +9,42 @@ use App\Http\Controllers\PendaftarController;
 use App\Http\Controllers\Admin\AdminPendaftarController;
 use App\Http\Controllers\Admin\DosenController;
 use App\Http\Controllers\Admin\ProdiController;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PendaftarExport;
+use App\Imports\PendaftarImport;
+use App\Http\Controllers\PendaftarKrsController;
+use App\Http\Controllers\KrsValidasiController;
 
-/*
-|--------------------------------------------------------------------------
-| HOME
-|--------------------------------------------------------------------------
-*/
+Route::get('/validasi/krs/{token}', [KrsValidasiController::class, 'show'])
+    ->name('krs.validasi');
+
 Route::get('/', function () {
     return view('welcome');
 });
 
 /*
 |--------------------------------------------------------------------------
-| AUTHENTICATED USER
+| AUTH
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
 
-    // Profile
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Redirect dashboard by role
-    Route::get('/dashboard', function () {
-        if (Auth::user()->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
 
-        return redirect()->route('pendaftar.dashboard');
+    Route::get('/dashboard', function () {
+        return Auth::user()->role === 'admin'
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('pendaftar.dashboard');
     })->name('dashboard');
 });
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN ROUTES
+| ADMIN
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:admin'])
@@ -51,51 +52,72 @@ Route::middleware(['auth', 'role:admin'])
     ->name('admin.')
     ->group(function () {
 
-        // Dashboard
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', fn () => view('admin.dashboard'))
+            ->name('dashboard');
 
-        // Pendaftar (Admin)
+        // ======================
+        // PENDAFTAR
+        // ======================
         Route::get('/pendaftar', [AdminPendaftarController::class, 'index'])
             ->name('pendaftar.index');
 
-        Route::get('/pendaftar/create', [AdminPendaftarController::class, 'create'])
-            ->name('pendaftar.create');   // <-- ini harus ada
+        Route::patch('/pendaftar/{pendaftar}/status',
+            [AdminPendaftarController::class, 'updateStatus']
+        )->name('pendaftar.updateStatus');
 
-        Route::post('/pendaftar/store', [AdminPendaftarController::class, 'store'])
-            ->name('pendaftar.store');   // <-- ini juga harus ada
+        Route::delete('/pendaftar/{pendaftar}',
+            [AdminPendaftarController::class, 'destroy']
+        )->name('pendaftar.destroy');
 
-        // Dosen
+        // 🔽 LEVEL 6 — EXPORT & IMPORT
+        Route::get('/pendaftar/export',
+            [AdminPendaftarController::class, 'export']
+        )->name('pendaftar.export');
+
+        Route::post('/pendaftar/import',
+            [AdminPendaftarController::class, 'import']
+        )->name('pendaftar.import');
+
+        // ======================
+        // DOSEN
+        // ======================
         Route::get('/dosen', [DosenController::class, 'index'])->name('dosen.index');
         Route::post('/dosen', [DosenController::class, 'store'])->name('dosen.store');
+        Route::patch('/dosen/{dosen}', [DosenController::class, 'update'])->name('dosen.update');
+        Route::delete('/dosen/{dosen}', [DosenController::class, 'destroy'])->name('dosen.destroy');
 
-        // Prodi
+        // ======================
+        // PRODI
+        // ======================
         Route::get('/prodi', [ProdiController::class, 'index'])->name('prodi.index');
         Route::post('/prodi', [ProdiController::class, 'store'])->name('prodi.store');
     });
 
 
+
 /*
 |--------------------------------------------------------------------------
-| PENDAFTAR ROUTES
+| PENDAFTAR
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:pendaftar'])->group(function () {
 
-    Route::get('/pendaftar/dashboard', [PendaftarDashboardController::class, 'index'])
-        ->name('pendaftar.dashboard');
+    Route::get('/pendaftar/dashboard',
+        [PendaftarDashboardController::class, 'index']
+    )->name('pendaftar.dashboard');
 
-    Route::get('/pendaftar/create', [PendaftarController::class, 'create'])
-        ->name('pendaftar.create');
+    Route::get('/pendaftar/create',
+        [PendaftarController::class, 'create']
+    )->name('pendaftar.create');
 
-    Route::post('/pendaftar/store', [PendaftarController::class, 'store'])
-        ->name('pendaftar.store');
+    Route::post('/pendaftar',
+        [PendaftarController::class, 'store']
+    )->name('pendaftar.store');
+
+    Route::get('/pendaftar/krs/pdf', [PendaftarKrsController::class, 'print'])
+        ->name('pendaftar.krs.pdf');
+        
 });
 
-/*
-|--------------------------------------------------------------------------
-| AUTH ROUTES
-|--------------------------------------------------------------------------
-*/
-require __DIR__ . '/auth.php';
+
+require __DIR__.'/auth.php';

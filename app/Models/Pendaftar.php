@@ -20,7 +20,8 @@ class Pendaftar extends Model
         'prodi_id',
         'dosen_id',
         'foto',
-        'dokumen'
+        'dokumen',
+        'status'
     ];
 
     public function prodi()

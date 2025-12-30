@@ -15,15 +15,71 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gradient-to-br from-blue-50 via-white to-blue-100 font-sans antialiased">
+<body class="font-sans antialiased bg-gray-100">
 
-    <!-- NAVIGATION -->
-    @include('layouts.navigation')
+<div class="flex min-h-screen">
 
-    <!-- PAGE CONTENT -->
-    <main class="min-h-screen py-10">
+    {{-- SIDEBAR --}}
+    <aside class="w-64 bg-blue-900 text-white fixed inset-y-0 left-0">
+        <div class="p-6 font-bold text-xl border-b border-blue-800">
+            SI AKAD
+        </div>
+
+        <nav class="mt-4 space-y-1 px-4">
+
+            {{-- ================= ADMIN ================= --}}
+            @if(auth()->user()->role === 'admin')
+
+                <a href="{{ route('admin.dashboard') }}"
+                   class="block px-4 py-2 rounded-lg
+                   {{ request()->routeIs('admin.dashboard') ? 'bg-blue-700' : 'hover:bg-blue-800' }}">
+                    📊 Dashboard
+                </a>
+
+                <a href="{{ route('admin.pendaftar.index') }}"
+                   class="block px-4 py-2 rounded-lg
+                   {{ request()->routeIs('admin.pendaftar.*') ? 'bg-blue-700' : 'hover:bg-blue-800' }}">
+                    👨‍🎓 Data Pendaftar
+                </a>
+
+                <a href="{{ route('admin.dosen.index') }}"
+                   class="block px-4 py-2 rounded-lg
+                   {{ request()->routeIs('admin.dosen.*') ? 'bg-blue-700' : 'hover:bg-blue-800' }}">
+                    👨‍🏫 Data Dosen
+                </a>
+
+                <a href="{{ route('admin.prodi.index') }}"
+                   class="block px-4 py-2 rounded-lg
+                   {{ request()->routeIs('admin.prodi.*') ? 'bg-blue-700' : 'hover:bg-blue-800' }}">
+                    🎓 Program Studi
+                </a>
+
+            {{-- ================= PENDAFTAR ================= --}}
+            @else
+
+                <a href="{{ route('pendaftar.dashboard') }}"
+                   class="block px-4 py-2 rounded-lg
+                   {{ request()->routeIs('pendaftar.dashboard') ? 'bg-blue-700' : 'hover:bg-blue-800' }}">
+                    🏠 Dashboard
+                </a>
+
+                <a href="{{ route('pendaftar.create') }}"
+                   class="block px-4 py-2 rounded-lg
+                   {{ request()->routeIs('pendaftar.create') ? 'bg-blue-700' : 'hover:bg-blue-800' }}">
+                    📝 Form Pendaftaran
+                </a>
+
+            @endif
+
+        </nav>
+    </aside>
+
+    {{-- MAIN CONTENT --}}
+    <main class="flex-1 ml-64 p-8">
         @yield('content')
     </main>
+
+</div>
 
 </body>
 </html>

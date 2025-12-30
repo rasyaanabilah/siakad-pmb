@@ -1,63 +1,54 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-10">
-    <div class="max-w-7xl mx-auto px-6">
+<div class="space-y-8">
 
-        <!-- WELCOME -->
-        <div class="mb-8">
-            <h3 class="text-2xl font-bold text-gray-800">
-                Halo, Admin 👋
-            </h3>
-            <p class="text-gray-500">
-                Kelola data pendaftar, dosen, dan program studi
-            </p>
+    {{-- HEADER --}}
+    <div>
+        <h3 class="text-2xl font-bold text-gray-800">
+            Halo, Admin 👋
+        </h3>
+        <p class="text-gray-500">
+            Kelola data pendaftar, dosen, dan program studi
+        </p>
+    </div>
+
+    {{-- STATISTIK --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="bg-white rounded-xl shadow border p-6">
+            <p class="text-sm text-gray-500">Total Pendaftar</p>
+            <h4 class="text-2xl font-bold text-gray-800 mt-1">
+                {{ \App\Models\Pendaftar::count() }}
+            </h4>
         </div>
 
-        <!-- MENU CARD -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-xl shadow border p-6">
+            <p class="text-sm text-gray-500">Diterima</p>
+            <h4 class="text-2xl font-bold text-green-600 mt-1">
+                {{ \App\Models\Pendaftar::where('status','diterima')->count() }}
+            </h4>
+        </div>
 
-            <!-- PENDAFTAR -->
-            <div class="bg-white rounded-xl shadow border p-6">
-                <div class="text-4xl mb-4">👨‍🎓</div>
-                <h4 class="text-lg font-semibold text-gray-800 mb-2">
-                    Data Pendaftar
-                </h4>
-                <p class="text-gray-500 mb-4">
-                    Lihat dan verifikasi data pendaftar
-                </p>
-                <a href="{{ route('admin.pendaftar.index') }}"
-                   class="inline-block px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    Kelola
-                </a>
-            </div>
-
-            <!-- DOSEN -->
-            <div class="bg-white rounded-xl shadow border p-6">
-                <div class="text-4xl mb-4">👨‍🏫</div>
-                <h4 class="text-lg font-semibold text-gray-800 mb-2">
-                    Data Dosen
-                </h4>
-                <p class="text-gray-500 mb-4">
-                    Kelola data dosen pembimbing
-                </p>
-                <a href="{{ route('admin.dosen.index') }}">Kelola Dosen</a>
-            </div>
-
-            <!-- PRODI -->
-            <div class="bg-white rounded-xl shadow border p-6">
-                <div class="text-4xl mb-4">🎓</div>
-                <h4 class="text-lg font-semibold text-gray-800 mb-2">
-                    Program Studi
-                </h4>
-                <p class="text-gray-500 mb-4">
-                    Kelola data program studi
-                </p>
-                <a href="{{ route('admin.prodi.index') }}">Kelola Prodi</a>
-            </div>
-
+        <div class="bg-white rounded-xl shadow border p-6">
+            <p class="text-sm text-gray-500">Pending</p>
+            <h4 class="text-2xl font-bold text-yellow-600 mt-1">
+                {{ \App\Models\Pendaftar::where('status','pending')->count() }}
+            </h4>
         </div>
 
     </div>
+
+    {{-- INFORMASI --}}
+    <div class="bg-white rounded-xl shadow border p-6">
+        <h4 class="font-semibold text-gray-800 mb-2">
+            Informasi
+        </h4>
+        <p class="text-gray-500 text-sm">
+            Gunakan menu di sidebar kiri untuk mengelola data pendaftar,
+            dosen pembimbing, dan program studi.
+        </p>
+    </div>
+
 </div>
 @endsection

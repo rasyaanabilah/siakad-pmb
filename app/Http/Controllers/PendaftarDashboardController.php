@@ -13,5 +13,5 @@ class PendaftarDashboardController extends Controller
 
         return view('pendaftar.dashboard', compact('pendaftar'));
     }
-
+    
 }
