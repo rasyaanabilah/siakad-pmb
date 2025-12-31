@@ -17,6 +17,8 @@ class Pendaftar extends Model
         'nama',
         'email',
         'sekolah_asal',
+        'gender',
+        'angkatan',
         'prodi_id',
         'dosen_id',
         'foto',

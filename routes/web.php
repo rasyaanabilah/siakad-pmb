@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PendaftarDashboardController;
@@ -55,6 +56,28 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/dashboard', fn () => view('admin.dashboard'))
             ->name('dashboard');
 
+        Route::get('/dashboard-data', function () {
+            $prodi = \App\Models\Prodi::withCount('pendaftars')->get()->pluck('pendaftars_count', 'nama_prodi')->toArray();
+            $gender = \App\Models\Pendaftar::selectRaw('gender, count(*) as count')->groupBy('gender')->pluck('count', 'gender')->toArray();
+            $angkatan = \App\Models\Pendaftar::selectRaw('angkatan, count(*) as count')
+                ->where('angkatan', '>', 0)
+                ->groupBy('angkatan')
+                ->pluck('count', 'angkatan')->toArray();
+
+            // Jika kosong, tambah dummy
+            if (empty($prodi)) $prodi = ['Contoh Prodi' => 1];
+            if (empty($gender)) $gender = ['laki-laki' => 1];
+            if (empty($angkatan)) $angkatan = [date('Y') => 1];
+
+            Log::info('Dashboard data:', ['prodi' => $prodi, 'gender' => $gender, 'angkatan' => $angkatan]);
+
+            return response()->json([
+                'prodi' => $prodi,
+                'gender' => $gender,
+                'angkatan' => $angkatan,
+            ]);
+        })->name('dashboard.data');
+
         // ======================
         // PENDAFTAR
         // ======================
@@ -105,6 +128,10 @@ Route::middleware(['auth', 'role:pendaftar'])->group(function () {
     Route::get('/pendaftar/dashboard',
         [PendaftarDashboardController::class, 'index']
     )->name('pendaftar.dashboard');
+
+    Route::get('/pendaftar',
+        [PendaftarController::class, 'create']
+    )->name('pendaftar.index');
 
     Route::get('/pendaftar/create',
         [PendaftarController::class, 'create']

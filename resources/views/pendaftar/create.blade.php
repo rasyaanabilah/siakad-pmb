@@ -25,6 +25,14 @@
 
             <input type="text" name="sekolah_asal" placeholder="Sekolah Asal" value="{{ old('sekolah_asal') }}" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
 
+            <select name="gender" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                <option value="">-- Pilih Gender --</option>
+                <option value="laki-laki" {{ old('gender') == 'laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                <option value="perempuan" {{ old('gender') == 'perempuan' ? 'selected' : '' }}>Perempuan</option>
+            </select>
+
+            <input type="number" name="angkatan" placeholder="Angkatan (tahun)" value="{{ old('angkatan', date('Y')) }}" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500" min="2000" max="2030">
+
             <select name="prodi_id" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
                 <option value="">-- Pilih Program Studi --</option>
                 @foreach ($prodis as $prodi)

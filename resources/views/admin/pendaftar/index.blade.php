@@ -1,5 +1,13 @@
 @extends('layouts.app')
 
+@section('head')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+@endsection
+
+@section('head')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+@endsection
+
 @section('content')
 <div class="py-8">
     <div class="max-w-7xl mx-auto px-6 space-y-6">
@@ -121,7 +129,103 @@
 </div>
 
 {{-- AJAX --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
+    // Inisialisasi Toastr
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+
+    // Pusher untuk notifikasi realtime
+    const pusher = new Pusher('{{ env("PUSHER_APP_KEY") }}', {
+        cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
+        encrypted: true
+    });
+
+    let pusherConnected = false;
+    pusher.connection.bind('connected', function() {
+        pusherConnected = true;
+        console.log('Pusher connected');
+    });
+    pusher.connection.bind('disconnected', function() {
+        pusherConnected = false;
+        console.log('Pusher disconnected');
+    });
+
+    const channel = pusher.subscribe('dashboard');
+    channel.bind('pendaftar-baru', function(data) {
+        console.log('Pusher event received:', data);
+        // Notifikasi
+        toastr.success('Mahasiswa baru telah mendaftar: ' + data.pendaftar.nama);
+
+        // Reload halaman untuk update tabel
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    });
+
+    // Polling sebagai fallback atau utama
+    let lastCount = 0;
+    function startPolling() {
+        console.log('Starting polling for notifications');
+        // Initial fetch
+        axios.get('/admin/dashboard-data', {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => {
+            const data = response.data;
+            lastCount = Object.values(data.prodi).reduce((a, b) => a + (parseInt(b) || 0), 0);
+            console.log('Initial total:', lastCount);
+        })
+        .catch(error => {
+            console.error('Initial fetch error:', error);
+        });
+
+        // Then poll
+        setInterval(() => {
+            axios.get('/admin/dashboard-data', {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => {
+                const data = response.data;
+                const total = Object.values(data.prodi).reduce((a, b) => a + (parseInt(b) || 0), 0);
+                console.log('Polling: current total', total, 'last', lastCount);
+                if (total > lastCount) {
+                    toastr.success('Ada mahasiswa baru mendaftar!');
+                    setTimeout(() => location.reload(), 1000);
+                }
+                lastCount = total;
+            })
+            .catch(error => {
+                console.error('Polling error:', error);
+            });
+        }, 5000); // Check every 5 seconds
+    }
+
+    // Start polling always
+    startPolling();
+
 document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.btn-status').forEach(button => {

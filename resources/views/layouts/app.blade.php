@@ -13,6 +13,12 @@
 
     <!-- Tailwind -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- 🔥 INI YANG HILANG -->
+    @yield('head')
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body class="font-sans antialiased bg-gray-100">
@@ -54,6 +60,15 @@
                     🎓 Program Studi
                 </a>
 
+                <hr class="border-blue-700 my-4">
+
+                <form method="POST" action="{{ route('logout') }}" class="px-4">
+                    @csrf
+                    <button type="submit" class="w-full text-left px-4 py-2 rounded-lg hover:bg-blue-800">
+                        Logout
+                    </button>
+                </form>
+
             {{-- ================= PENDAFTAR ================= --}}
             @else
 
@@ -69,6 +84,15 @@
                     📝 Form Pendaftaran
                 </a>
 
+                <hr class="border-blue-700 my-4">
+
+                <form method="POST" action="{{ route('logout') }}" class="px-4">
+                    @csrf
+                    <button type="submit" class="w-full text-left px-4 py-2 rounded-lg hover:bg-blue-800">
+                        Logout
+                    </button>
+                </form>
+
             @endif
 
         </nav>
@@ -80,6 +104,8 @@
     </main>
 
 </div>
+
+@yield('scripts')
 
 </body>
 </html>
