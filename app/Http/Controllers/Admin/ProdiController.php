@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class ProdiController extends Controller
 {
     /**
-     * Tampilkan semua Prodi dan Pendaftar
+     * READ - Tampilkan semua Prodi
      */
     public function index()
     {
@@ -21,7 +21,7 @@ class ProdiController extends Controller
     }
 
     /**
-     * Simpan Prodi baru
+     * CREATE - Simpan Prodi baru
      */
     public function store(Request $request)
     {
@@ -35,5 +35,33 @@ class ProdiController extends Controller
 
         return redirect()->route('admin.prodi.index')
             ->with('success', 'Prodi berhasil ditambahkan');
+    }
+
+    /**
+     * UPDATE - Update Prodi
+     */
+    public function update(Request $request, Prodi $prodi)
+    {
+        $request->validate([
+            'nama_prodi' => 'required|string|max:100',
+        ]);
+
+        $prodi->update([
+            'nama_prodi' => $request->nama_prodi,
+        ]);
+
+        return redirect()->route('admin.prodi.index')
+            ->with('success', 'Prodi berhasil diperbarui');
+    }
+
+    /**
+     * DELETE - Hapus Prodi
+     */
+    public function destroy(Prodi $prodi)
+    {
+        $prodi->delete();
+
+        return redirect()->route('admin.prodi.index')
+            ->with('success', 'Prodi berhasil dihapus');
     }
 }

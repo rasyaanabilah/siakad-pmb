@@ -116,26 +116,40 @@
             </h3>
 
             @if($pendaftar->dokumen)
-                <div class="flex items-center justify-between border rounded-lg p-4">
-                    <div class="flex items-center gap-2 text-sm">
-                        📄 <span>Dokumen tersedia</span>
+
+            <div class="space-y-4">
+
+                {{-- INFO DOKUMEN --}}
+                <div class="flex items-center justify-between border rounded-xl p-4 bg-gray-50">
+                    <div class="flex items-center gap-3 text-sm text-gray-700">
+                        <span class="text-xl">📄</span>
+                        <span>Dokumen pendaftaran tersedia</span>
                     </div>
 
                     <a href="{{ asset('storage/'.$pendaftar->dokumen) }}"
                        target="_blank"
-                       class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
+                       class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">
                         Lihat Dokumen
                     </a>
-
                 </div>
 
-                <div class="mt-4">
+                {{-- CETAK PDF --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <a href="{{ route('pendaftar.krs.pdf') }}"
-                    target="_blank"
-                    class="px-4 py-2 bg-red-600 text-white rounded">
-                        Cetak KRS (PDF)
+                       target="_blank"
+                       class="flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition shadow">
+                        🧾 <span>Cetak KRS (PDF)</span>
+                    </a>
+
+                    <a href="{{ route('pendaftar.kartu-ujian.pdf') }}"
+                       target="_blank"
+                       class="flex items-center justify-center gap-2 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition shadow">
+                        🎫 <span>Cetak Kartu Ujian</span>
                     </a>
                 </div>
+
+            </div>
+
             @else
                 <p class="text-gray-400 italic text-sm">
                     Dokumen belum diunggah

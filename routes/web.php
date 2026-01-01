@@ -3,39 +3,40 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PendaftarDashboardController;
 use App\Http\Controllers\PendaftarController;
+use App\Http\Controllers\PendaftarUjianController;
+use App\Http\Controllers\PendaftarKrsController;
+use App\Http\Controllers\KrsValidasiController;
 use App\Http\Controllers\Admin\AdminPendaftarController;
 use App\Http\Controllers\Admin\DosenController;
 use App\Http\Controllers\Admin\ProdiController;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\PendaftarExport;
-use App\Imports\PendaftarImport;
-use App\Http\Controllers\PendaftarKrsController;
-use App\Http\Controllers\KrsValidasiController;
-
-Route::get('/validasi/krs/{token}', [KrsValidasiController::class, 'show'])
-    ->name('krs.validasi');
-
+use App\Http\Controllers\Admin\AdminDashboardController;
+/*
+|--------------------------------------------------------------------------
+| PUBLIC
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/validasi/krs/{token}', [KrsValidasiController::class, 'show'])
+    ->name('krs.validasi');
+
 /*
 |--------------------------------------------------------------------------
-| AUTH
+| AUTH (LOGIN / PROFILE)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-
+    // Redirect setelah login (BERDASARKAN ROLE)
     Route::get('/dashboard', function () {
         return Auth::user()->role === 'admin'
             ? redirect()->route('admin.dashboard')
@@ -53,70 +54,48 @@ Route::middleware(['auth', 'role:admin'])
     ->name('admin.')
     ->group(function () {
 
-        Route::get('/dashboard', fn () => view('admin.dashboard'))
-            ->name('dashboard');
+        
 
-        Route::get('/dashboard-data', function () {
-            $prodi = \App\Models\Prodi::withCount('pendaftars')->get()->pluck('pendaftars_count', 'nama_prodi')->toArray();
-            $gender = \App\Models\Pendaftar::selectRaw('gender, count(*) as count')->groupBy('gender')->pluck('count', 'gender')->toArray();
-            $angkatan = \App\Models\Pendaftar::selectRaw('angkatan, count(*) as count')
-                ->where('angkatan', '>', 0)
-                ->groupBy('angkatan')
-                ->pluck('count', 'angkatan')->toArray();
+    Route::get('/dashboard-data', [AdminDashboardController::class, 'data'])
+    ->name('dashboard.data');
 
-            // Jika kosong, tambah dummy
-            if (empty($prodi)) $prodi = ['Contoh Prodi' => 1];
-            if (empty($gender)) $gender = ['laki-laki' => 1];
-            if (empty($angkatan)) $angkatan = [date('Y') => 1];
+        Route::get('/dashboard', fn () => view('admin.dashboard'))->name('dashboard');
 
-            Log::info('Dashboard data:', ['prodi' => $prodi, 'gender' => $gender, 'angkatan' => $angkatan]);
+        // Pendaftar
+        Route::get('/pendaftar', [AdminPendaftarController::class, 'index'])->name('pendaftar.index');
+        Route::patch('/pendaftar/{pendaftar}/status', [AdminPendaftarController::class, 'updateStatus'])->name('pendaftar.updateStatus');
+        Route::delete('/pendaftar/{pendaftar}', [AdminPendaftarController::class, 'destroy'])->name('pendaftar.destroy');
+        Route::get('/pendaftar/export', [AdminPendaftarController::class, 'export'])
+        ->name('pendaftar.export');
+        Route::post('/pendaftar/import',[AdminPendaftarController::class, 'import'])
+        ->name('pendaftar.import');
+        // ambil data (AJAX - modal edit)
+        Route::get('/pendaftar/{pendaftar}', 
+            [AdminPendaftarController::class, 'show']
+        )->name('pendaftar.show');
 
-            return response()->json([
-                'prodi' => $prodi,
-                'gender' => $gender,
-                'angkatan' => $angkatan,
-            ]);
-        })->name('dashboard.data');
+        // update data (AJAX)
+        Route::patch('/pendaftar/{pendaftar}', 
+            [AdminPendaftarController::class, 'update']
+        )->name('pendaftar.update');
 
-        // ======================
-        // PENDAFTAR
-        // ======================
-        Route::get('/pendaftar', [AdminPendaftarController::class, 'index'])
-            ->name('pendaftar.index');
-
-        Route::patch('/pendaftar/{pendaftar}/status',
+        // update status (AJAX)
+        Route::patch('/pendaftar/{pendaftar}/status', 
             [AdminPendaftarController::class, 'updateStatus']
         )->name('pendaftar.updateStatus');
 
-        Route::delete('/pendaftar/{pendaftar}',
-            [AdminPendaftarController::class, 'destroy']
-        )->name('pendaftar.destroy');
-
-        // 🔽 LEVEL 6 — EXPORT & IMPORT
-        Route::get('/pendaftar/export',
-            [AdminPendaftarController::class, 'export']
-        )->name('pendaftar.export');
-
-        Route::post('/pendaftar/import',
-            [AdminPendaftarController::class, 'import']
-        )->name('pendaftar.import');
-
-        // ======================
-        // DOSEN
-        // ======================
+        // Dosen
         Route::get('/dosen', [DosenController::class, 'index'])->name('dosen.index');
         Route::post('/dosen', [DosenController::class, 'store'])->name('dosen.store');
         Route::patch('/dosen/{dosen}', [DosenController::class, 'update'])->name('dosen.update');
         Route::delete('/dosen/{dosen}', [DosenController::class, 'destroy'])->name('dosen.destroy');
 
-        // ======================
-        // PRODI
-        // ======================
+        // Prodi
         Route::get('/prodi', [ProdiController::class, 'index'])->name('prodi.index');
         Route::post('/prodi', [ProdiController::class, 'store'])->name('prodi.store');
+        Route::put('/prodi/{prodi}', [ProdiController::class, 'update'])->name('prodi.update');
+        Route::delete('/prodi/{prodi}', [ProdiController::class, 'destroy'])->name('prodi.destroy');
     });
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -125,26 +104,20 @@ Route::middleware(['auth', 'role:admin'])
 */
 Route::middleware(['auth', 'role:pendaftar'])->group(function () {
 
-    Route::get('/pendaftar/dashboard',
-        [PendaftarDashboardController::class, 'index']
-    )->name('pendaftar.dashboard');
+    Route::get('/pendaftar/dashboard', [PendaftarDashboardController::class, 'index'])
+        ->name('pendaftar.dashboard');
 
-    Route::get('/pendaftar',
-        [PendaftarController::class, 'create']
-    )->name('pendaftar.index');
+    Route::get('/pendaftar/create', [PendaftarController::class, 'create'])
+        ->name('pendaftar.create');
 
-    Route::get('/pendaftar/create',
-        [PendaftarController::class, 'create']
-    )->name('pendaftar.create');
-
-    Route::post('/pendaftar',
-        [PendaftarController::class, 'store']
-    )->name('pendaftar.store');
+    Route::post('/pendaftar', [PendaftarController::class, 'store'])
+        ->name('pendaftar.store');
 
     Route::get('/pendaftar/krs/pdf', [PendaftarKrsController::class, 'print'])
         ->name('pendaftar.krs.pdf');
-        
-});
 
+    Route::get('/pendaftar/kartu-ujian/pdf', [PendaftarUjianController::class, 'print'])
+        ->name('pendaftar.kartu-ujian.pdf');
+});
 
 require __DIR__.'/auth.php';

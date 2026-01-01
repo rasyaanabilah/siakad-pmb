@@ -1,19 +1,37 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\PendaftarController;
+use App\Http\Controllers\Api\DataController;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| PUBLIC API (tanpa login)
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
 */
+Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// data master (boleh publik)
+Route::get('/prodi', [DataController::class, 'prodi']);
+Route::get('/dosen', [DataController::class, 'dosen']);
+
+/*
+|--------------------------------------------------------------------------
+| PROTECTED API (harus login)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->group(function () {
+
+    // profile
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+
+    // pendaftar
+    Route::get('/pendaftar', [PendaftarController::class, 'index']);
+    Route::get('/pendaftar/{id}', [PendaftarController::class, 'show']);
+
+    // auth
+    Route::post('/logout', [AuthController::class, 'logout']);
 });

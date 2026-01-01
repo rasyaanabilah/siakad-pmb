@@ -10,11 +10,17 @@ class Prodi extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nama_prodi'];
+    // Jika nama tabel BUKAN "prodis", aktifkan baris ini
+    // protected $table = 'prodi';
+
+    // Kolom yang boleh diisi
+    protected $fillable = [
+        'nama_prodi'
+    ];
 
     /**
      * Relasi ke Pendaftar
-     * Satu Prodi bisa memiliki banyak Pendaftar
+     * Satu Prodi memiliki banyak Pendaftar
      */
     public function pendaftars()
     {

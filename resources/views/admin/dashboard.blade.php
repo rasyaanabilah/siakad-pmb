@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 @endsection
 
+
 @section('content')
 <div class="space-y-8">
 
@@ -51,22 +52,20 @@
             <canvas id="angkatanChart"></canvas>
         </div>
     </div>
-    
-</div>
 
-{{-- SCRIPT --}}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</div>
+@endsection
+
+
+@section('scripts')
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-$(document).ready(function () {
+document.addEventListener('DOMContentLoaded', function () {
 
-    /* ===========================
-       TOASTR CONFIG
-    =========================== */
     toastr.options = {
         closeButton: true,
         progressBar: true,
@@ -74,92 +73,67 @@ $(document).ready(function () {
         timeOut: "5000"
     };
 
-    /* ===========================
-       DATA AWAL
-    =========================== */
-    let prodiData = {};
-    let genderData = {};
-    let angkatanData = {};
+    let prodiChart, genderChart, angkatanChart;
 
-    /* ===========================
-       FETCH DATA AWAL
-    =========================== */
-    axios.get('/admin/dashboard-data')
-        .then(res => {
-            prodiData = res.data.prodi;
-            genderData = res.data.gender;
-            angkatanData = res.data.angkatan;
-            initCharts();
-        });
+    function loadDashboard() {
+        axios.get('/admin/dashboard-data')
+            .then(res => {
+                renderCharts(res.data);
+                updateStats(res.data);
+            });
+    }
 
-    /* ===========================
-       INIT CHART
-    =========================== */
-    function initCharts() {
+    function renderCharts(data) {
 
-        window.prodiChart = new Chart(document.getElementById('prodiChart'), {
+        if (prodiChart) prodiChart.destroy();
+        if (genderChart) genderChart.destroy();
+        if (angkatanChart) angkatanChart.destroy();
+
+        prodiChart = new Chart(document.getElementById('prodiChart'), {
             type: 'bar',
             data: {
-                labels: Object.keys(prodiData),
+                labels: Object.keys(data.prodi),
                 datasets: [{
-                    label: 'Jumlah',
-                    data: Object.values(prodiData),
+                    label: 'Jumlah Mahasiswa',
+                    data: Object.values(data.prodi),
                     backgroundColor: 'rgba(54,162,235,.6)'
                 }]
             }
         });
 
-        window.genderChart = new Chart(document.getElementById('genderChart'), {
+        genderChart = new Chart(document.getElementById('genderChart'), {
             type: 'pie',
             data: {
-                labels: Object.keys(genderData),
+                labels: Object.keys(data.gender),
                 datasets: [{
-                    data: Object.values(genderData),
-                    backgroundColor: ['#60a5fa ','#f87171']
+                    data: Object.values(data.gender),
+                    backgroundColor: ['#60a5fa','#f87171']
                 }]
             }
         });
 
-        window.angkatanChart = new Chart(document.getElementById('angkatanChart'), {
+        angkatanChart = new Chart(document.getElementById('angkatanChart'), {
             type: 'line',
             data: {
-                labels: Object.keys(angkatanData),
+                labels: Object.keys(data.angkatan),
                 datasets: [{
-                    label: 'Jumlah',
-                    data: Object.values(angkatanData),
+                    label: 'Jumlah Mahasiswa',
+                    data: Object.values(data.angkatan),
                     borderColor: '#34d399'
                 }]
             }
         });
     }
 
-    /* ===========================
-       UPDATE
-    =========================== */
     function updateStats(data) {
         document.getElementById('total-pendaftar').innerText =
-            Object.values(data.prodi).reduce((a,b)=>a+parseInt(b),0);
+            Object.values(data.prodi).reduce((a,b)=>a + parseInt(b), 0);
     }
 
-    function updateCharts(data) {
-        prodiChart.data.labels = Object.keys(data.prodi);
-        prodiChart.data.datasets[0].data = Object.values(data.prodi);
-        prodiChart.update();
+    // Load awal
+    loadDashboard();
 
-        genderChart.data.labels = Object.keys(data.gender);
-        genderChart.data.datasets[0].data = Object.values(data.gender);
-        genderChart.update();
-
-        angkatanChart.data.labels = Object.keys(data.angkatan);
-        angkatanChart.data.datasets[0].data = Object.values(data.angkatan);
-        angkatanChart.update();
-    }
-
-    /* ===========================
-       PUSHER (HANYA SEKALI)
-    =========================== */
-    Pusher.logToConsole = true;
-
+    // Pusher realtime
     const pusher = new Pusher('{{ env("PUSHER_APP_KEY") }}', {
         cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
         forceTLS: true
@@ -168,34 +142,13 @@ $(document).ready(function () {
     const channel = pusher.subscribe('dashboard');
 
     channel.bind('pendaftar-baru', function (data) {
-
-        console.log('TOAST DATA:', data);
-
         toastr.success(
             'Mahasiswa baru mendaftar: <b>' + data.pendaftar.nama + '</b>',
-            'Notifikasi'
+            'Realtime Update'
         );
-
-        // update realtime
-        axios.get('/admin/dashboard-data')
-            .then(res => {
-                updateStats(res.data);
-                updateCharts(res.data);
-            });
+        loadDashboard();
     });
-
-    /* ===========================
-       POLLING (TETAP ADA)
-    =========================== */
-    setInterval(() => {
-        axios.get('/admin/dashboard-data')
-            .then(res => {
-                updateStats(res.data);
-                updateCharts(res.data);
-            });
-    }, 5000);
 
 });
 </script>
-
 @endsection

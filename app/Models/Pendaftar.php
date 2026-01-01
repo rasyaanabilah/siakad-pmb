@@ -12,6 +12,9 @@ class Pendaftar extends Model
 {
     use HasFactory;
 
+    // Aman jika nama tabel tidak standar
+    protected $table = 'pendaftars';
+
     protected $fillable = [
         'user_id',
         'nama',
@@ -23,21 +26,30 @@ class Pendaftar extends Model
         'dosen_id',
         'foto',
         'dokumen',
-        'status'
+        'status',
     ];
 
+    /**
+     * Relasi ke Prodi
+     */
     public function prodi()
     {
         return $this->belongsTo(Prodi::class);
     }
 
+    /**
+     * Relasi ke Dosen
+     */
     public function dosen()
     {
         return $this->belongsTo(Dosen::class);
     }
 
+    /**
+     * Relasi ke User
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-    }
+}

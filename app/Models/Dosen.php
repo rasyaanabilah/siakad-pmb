@@ -10,11 +10,19 @@ class Dosen extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nama_dosen'];
+    // Opsional tapi aman (hapus jika nama tabel sudah 'dosens')
+    protected $table = 'dosens';
 
+    protected $fillable = [
+        'nama_dosen'
+    ];
+
+    /**
+     * Relasi ke Pendaftar
+     * Satu Dosen memiliki banyak Pendaftar
+     */
     public function pendaftars()
     {
         return $this->hasMany(Pendaftar::class, 'dosen_id');
     }
-
-    }
+}

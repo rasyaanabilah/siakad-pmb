@@ -11,14 +11,15 @@
             </h2>
         </div>
 
-        {{-- FORM TAMBAH PRODI --}}
-        <div class="bg-white rounded-xl shadow p-6">
-            @if(session('success'))
-                <div class="mb-4 p-3 bg-green-100 text-green-800 rounded">
-                    {{ session('success') }}
-                </div>
-            @endif
+        {{-- ALERT --}}
+        @if(session('success'))
+            <div class="p-4 bg-green-100 text-green-800 rounded-lg">
+                {{ session('success') }}
+            </div>
+        @endif
 
+        {{-- FORM TAMBAH --}}
+        <div class="bg-white rounded-xl shadow p-6">
             <form action="{{ route('admin.prodi.store') }}" method="POST" class="flex gap-3">
                 @csrf
                 <input type="text"
@@ -34,7 +35,7 @@
             </form>
         </div>
 
-        {{-- TABEL PRODI --}}
+        {{-- TABEL --}}
         <div class="bg-white rounded-xl shadow p-6">
             <h3 class="font-semibold mb-4">Daftar Prodi</h3>
 
@@ -43,17 +44,50 @@
                     <tr>
                         <th class="border px-3 py-2 w-16">No</th>
                         <th class="border px-3 py-2">Nama Prodi</th>
+                        <th class="border px-3 py-2 w-40">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($prodis as $i => $prodi)
                         <tr>
                             <td class="border px-3 py-2">{{ $i + 1 }}</td>
-                            <td class="border px-3 py-2">{{ $prodi->nama_prodi }}</td>
+
+                            {{-- UPDATE --}}
+                            <td class="border px-3 py-2">
+                                <form action="{{ route('admin.prodi.update', $prodi->id) }}"
+                                      method="POST"
+                                      class="flex gap-2">
+                                    @csrf
+                                    @method('PUT')
+
+                                    <input type="text"
+                                           name="nama_prodi"
+                                           value="{{ $prodi->nama_prodi }}"
+                                           class="flex-1 border rounded px-2 py-1">
+
+                                    <button class="px-3 py-1 bg-yellow-500 text-white rounded">
+                                        Update
+                                    </button>
+                                </form>
+                            </td>
+
+                            {{-- DELETE --}}
+                            <td class="border px-3 py-2 text-center">
+                                <form action="{{ route('admin.prodi.destroy', $prodi->id) }}"
+                                      method="POST"
+                                      onsubmit="return confirm('Yakin hapus prodi ini?')">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button class="px-3 py-1 bg-red-600 text-white rounded">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="2" class="text-center py-4 text-gray-500">
+                            <td colspan="3" class="text-center py-4 text-gray-500">
                                 Belum ada data prodi
                             </td>
                         </tr>

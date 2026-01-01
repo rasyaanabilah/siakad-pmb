@@ -1,123 +1,84 @@
 @extends('layouts.app')
 
-@section('head')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-@endsection
-
-@section('head')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-@endsection
-
 @section('content')
-<div class="py-8">
+<div class="py-8 bg-gray-100 min-h-screen">
     <div class="max-w-7xl mx-auto px-6 space-y-6">
 
-        {{-- HEADER --}}
-        <div class="bg-white rounded-xl shadow p-6">
-            <h2 class="text-xl font-semibold text-gray-800">Data Pendaftar</h2>
-            <p class="text-sm text-gray-500">Kelola & verifikasi pendaftaran mahasiswa</p>
+        {{-- ================= HEADER ================= --}}
+        <div class="bg-white rounded-2xl shadow p-6">
+            <h2 class="text-2xl font-bold text-gray-800">
+                Data Pendaftar
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">
+                Level 5 — DataTables & AJAX (Sort, Search, Pagination tanpa reload)
+            </p>
         </div>
 
-        {{-- FILTER --}}
-        <div class="bg-white rounded-xl shadow p-4">
-            <form method="GET" class="flex gap-4 items-center">
-                <label class="text-sm font-medium">Filter Status:</label>
-                <select name="status" onchange="this.form.submit()"
-                    class="border rounded-lg px-3 py-2 text-sm">
-                    <option value="">Semua</option>
-                    <option value="pending" {{ request('status')=='pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="diterima" {{ request('status')=='diterima' ? 'selected' : '' }}>Diterima</option>
-                    <option value="ditolak" {{ request('status')=='ditolak' ? 'selected' : '' }}>Ditolak</option>
-                </select>
-            </form>
-        </div>
-
-        <div class="flex gap-3 mb-4">
-    <a href="{{ route('admin.pendaftar.export') }}"
-       class="px-4 py-2 bg-green-600 text-white rounded">
-        Export Excel
-    </a>
-
-    <form action="{{ route('admin.pendaftar.import') }}"
-          method="POST"
-          enctype="multipart/form-data"
-          class="flex gap-2">
-        @csrf
-        <input type="file" name="file" required>
-        <button class="px-4 py-2 bg-blue-600 text-white rounded">
-            Import
-        </button>
-    </form>
-</div>
-
-
-        {{-- TABLE --}}
-        <div class="bg-white rounded-xl shadow p-6 overflow-x-auto">
-            <table class="w-full border">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="border px-3 py-2">Nama</th>
-                        <th class="border px-3 py-2">Email</th>
-                        <th class="border px-3 py-2">Sekolah</th>
-                        <th class="border px-3 py-2">Prodi</th>
-                        <th class="border px-3 py-2">Dosen</th>
-                        <th class="border px-3 py-2">Status</th>
-                        <th class="border px-3 py-2 text-center">Aksi</th>
+        {{-- ================= TABLE ================= --}}
+        <div class="bg-white rounded-2xl shadow p-6">
+            <table id="pendaftarTable" class="w-full text-sm">
+                <thead>
+                    <tr class="border-b text-gray-600">
+                        <th class="py-3">Nama</th>
+                        <th>Email</th>
+                        <th>Sekolah</th>
+                        <th>Prodi</th>
+                        <th>Dosen</th>
+                        <th>Status</th>
+                        <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
+
                 <tbody>
                 @foreach($pendaftars as $p)
-                    <tr>
-                        <td class="border px-3 py-2">{{ $p->nama }}</td>
-                        <td class="border px-3 py-2">{{ $p->email }}</td>
-                        <td class="border px-3 py-2">{{ $p->sekolah_asal }}</td>
-                        <td class="border px-3 py-2">{{ $p->prodi->nama_prodi ?? '-' }}</td>
-                        <td class="border px-3 py-2">{{ $p->dosen->nama_dosen ?? '-' }}</td>
+                    <tr data-id="{{ $p->id }}" class="border-b hover:bg-gray-50 transition">
+
+                        {{-- NAMA --}}
+                        <td class="py-3 font-medium text-gray-800">
+                            {{ $p->nama }}
+                        </td>
+
+                        {{-- EMAIL --}}
+                        <td>{{ $p->email }}</td>
+
+                        {{-- SEKOLAH --}}
+                        <td>{{ $p->sekolah_asal }}</td>
+
+                        {{-- PRODI --}}
+                        <td>{{ $p->prodi->nama_prodi ?? '-' }}</td>
+
+                        {{-- DOSEN --}}
+                        <td>{{ $p->dosen->nama_dosen ?? '-' }}</td>
 
                         {{-- STATUS --}}
-                        <td class="border px-3 py-2">
-                            @if($p->status === 'pending')
-                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">Pending</span>
-                            @elseif($p->status === 'diterima')
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">Diterima</span>
-                            @else
-                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-sm">Ditolak</span>
-                            @endif
+                        <td class="status-cell">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold
+                                @if($p->status=='pending') bg-yellow-100 text-yellow-700
+                                @elseif($p->status=='diterima') bg-green-100 text-green-700
+                                @else bg-red-100 text-red-700 @endif">
+                                {{ ucfirst($p->status) }}
+                            </span>
                         </td>
 
                         {{-- AKSI --}}
-                        <td class="border px-3 py-2 text-center">
-                           @if($p->status === 'pending')
+                        <td class="aksi-cell text-center space-x-1">
+                            @if($p->status === 'pending')
                                 <button
-                                    type="button"
-                                    class="btn-status px-3 py-1 bg-green-600 text-white rounded text-sm"
-                                    data-id="{{ $p->id }}"
+                                    class="btn-status bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-xs transition"
                                     data-status="diterima">
                                     Terima
                                 </button>
 
                                 <button
-                                    type="button"
-                                    class="btn-status px-3 py-1 bg-red-600 text-white rounded text-sm"
-                                    data-id="{{ $p->id }}"
+                                    class="btn-status bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs transition"
                                     data-status="ditolak">
                                     Tolak
                                 </button>
                             @else
-                                <span class="text-gray-400 text-sm">Selesai</span>
-
-                                <form action="{{ route('admin.pendaftar.destroy', $p->id) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus data ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="px-3 py-1 bg-gray-600 text-white rounded text-sm">
-                                        Hapus
-                                    </button>
-                                </form>
+                                <span class="text-gray-400 text-xs">
+                                    Selesai
+                                </span>
                             @endif
-
-
                         </td>
                     </tr>
                 @endforeach
@@ -128,135 +89,77 @@
     </div>
 </div>
 
-{{-- AJAX --}}
+{{-- ================= SCRIPT ================= --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
 <script>
-    // Inisialisasi Toastr
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": true,
-        "progressBar": true,
-        "positionClass": "toast-top-right",
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    };
+$(document).ready(function () {
 
-    // Pusher untuk notifikasi realtime
-    const pusher = new Pusher('{{ env("PUSHER_APP_KEY") }}', {
-        cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
-        encrypted: true
-    });
-
-    let pusherConnected = false;
-    pusher.connection.bind('connected', function() {
-        pusherConnected = true;
-        console.log('Pusher connected');
-    });
-    pusher.connection.bind('disconnected', function() {
-        pusherConnected = false;
-        console.log('Pusher disconnected');
-    });
-
-    const channel = pusher.subscribe('dashboard');
-    channel.bind('pendaftar-baru', function(data) {
-        console.log('Pusher event received:', data);
-        // Notifikasi
-        toastr.success('Mahasiswa baru telah mendaftar: ' + data.pendaftar.nama);
-
-        // Reload halaman untuk update tabel
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
-    });
-
-    // Polling sebagai fallback atau utama
-    let lastCount = 0;
-    function startPolling() {
-        console.log('Starting polling for notifications');
-        // Initial fetch
-        axios.get('/admin/dashboard-data', {
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    /**
+     * ============================================
+     * 1. DataTables
+     *    - Search tanpa reload
+     *    - Sort tanpa reload
+     *    - Pagination tanpa reload
+     * ============================================
+     */
+    const table = $('#pendaftarTable').DataTable({
+        pageLength: 5,
+        lengthChange: false,
+        language: {
+            search: "Cari:",
+            paginate: {
+                previous: "←",
+                next: "→"
             }
+        }
+    });
+
+    /**
+     * ============================================
+     * 2. AJAX Update Status (Tanpa Reload)
+     * ============================================
+     */
+    $('#pendaftarTable').on('click', '.btn-status', function () {
+
+        const btn = $(this);
+        const row = btn.closest('tr');
+        const id = row.data('id');
+        const status = btn.data('status');
+
+        if (!confirm('Yakin ubah status pendaftar?')) return;
+
+        fetch(`/admin/pendaftar/${id}/status`, {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ status })
         })
-        .then(response => {
-            const data = response.data;
-            lastCount = Object.values(data.prodi).reduce((a, b) => a + (parseInt(b) || 0), 0);
-            console.log('Initial total:', lastCount);
+        .then(res => res.json())
+        .then(() => {
+
+            // 🔁 Update kolom status (real-time)
+            row.find('.status-cell').html(`
+                <span class="px-3 py-1 rounded-full text-xs font-semibold
+                    ${status === 'diterima'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-red-100 text-red-700'}">
+                    ${status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+            `);
+
+            // 🔁 Update kolom aksi
+            row.find('.aksi-cell').html(`
+                <span class="text-gray-400 text-xs">Selesai</span>
+            `);
         })
-        .catch(error => {
-            console.error('Initial fetch error:', error);
-        });
-
-        // Then poll
-        setInterval(() => {
-            axios.get('/admin/dashboard-data', {
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => {
-                const data = response.data;
-                const total = Object.values(data.prodi).reduce((a, b) => a + (parseInt(b) || 0), 0);
-                console.log('Polling: current total', total, 'last', lastCount);
-                if (total > lastCount) {
-                    toastr.success('Ada mahasiswa baru mendaftar!');
-                    setTimeout(() => location.reload(), 1000);
-                }
-                lastCount = total;
-            })
-            .catch(error => {
-                console.error('Polling error:', error);
-            });
-        }, 5000); // Check every 5 seconds
-    }
-
-    // Start polling always
-    startPolling();
-
-document.addEventListener('DOMContentLoaded', function () {
-
-    document.querySelectorAll('.btn-status').forEach(button => {
-        button.addEventListener('click', function () {
-
-            const id = this.dataset.id;
-            const status = this.dataset.status;
-
-            if (!confirm('Yakin ubah status?')) return;
-
-            fetch(`/admin/pendaftar/${id}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ status })
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('Gagal update status');
-                return res.json();
-            })
-            .then(() => {
-                location.reload(); // aman & sederhana
-            })
-            .catch(err => alert(err.message));
-        });
+        .catch(() => alert('Gagal update status'));
     });
 
 });
 </script>
-
 @endsection
