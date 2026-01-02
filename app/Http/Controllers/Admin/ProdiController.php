@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Prodi;
 use App\Models\Pendaftar;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProdiExport;
+use App\Imports\ProdiImport;
 
 class ProdiController extends Controller
 {
@@ -64,4 +67,5 @@ class ProdiController extends Controller
         return redirect()->route('admin.prodi.index')
             ->with('success', 'Prodi berhasil dihapus');
     }
+
 }

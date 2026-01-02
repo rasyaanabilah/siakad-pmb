@@ -89,6 +89,7 @@ class AdminPendaftarController extends Controller
 
 public function export()
 {
+    session()->flash('success', 'Data pendaftar berhasil diexport');
     return Excel::download(new PendaftarExport, 'pendaftar.xlsx');
 }
 
@@ -104,5 +105,20 @@ public function import(Request $request)
         ->route('admin.pendaftar.index')
         ->with('success', 'Data pendaftar berhasil diimport');
 }
+
+public function show(Pendaftar $pendaftar)
+{
+    return response()->json($pendaftar);
+}
+
+public function update(Request $request, Pendaftar $pendaftar)
+{
+    $pendaftar->update($request->only([
+        'nama', 'email', 'sekolah_asal'
+    ]));
+
+    return response()->json(['success' => true]);
+}
+
 
 }

@@ -11,7 +11,7 @@ use App\Models\User;
 class Pendaftar extends Model
 {
     use HasFactory;
-
+    
     // Aman jika nama tabel tidak standar
     protected $table = 'pendaftars';
 
